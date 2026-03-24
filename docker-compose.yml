@@ -1,0 +1,40 @@
+services:
+  firebase-emulator:
+    build:
+      context: .
+      dockerfile: docker/firebase/Dockerfile
+    ports:
+      - "4000:4000"   # Emulator UI
+      - "8080:8080"   # Firestore
+      - "9099:9099"   # Auth
+      - "9199:9199"   # Storage
+    volumes:
+      - ./firebase:/app
+      - firebase-emulator-data:/app/emulator-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  flutter-web:
+    build:
+      context: .
+      dockerfile: docker/flutter/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - flutter-pub-cache:/root/.pub-cache
+    depends_on:
+      firebase-emulator:
+        condition: service_healthy
+    environment:
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator:9099
+      - FIREBASE_STORAGE_EMULATOR_HOST=firebase-emulator:9199
+
+volumes:
+  firebase-emulator-data:
+  flutter-pub-cache:

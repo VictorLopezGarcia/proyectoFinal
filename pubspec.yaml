@@ -1,0 +1,71 @@
+name: rent_my_stuff
+description: "RentMyStuff — Plataforma P2P de alquiler de objetos"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.2
+  cloud_firestore: ^5.6.6
+  firebase_storage: ^12.4.5
+  firebase_messaging: ^15.2.5
+
+  # State Management (Riverpod)
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # Data & Serialization
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  equatable: ^2.0.7
+
+  # Auth
+  google_sign_in: ^6.2.2
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+
+  # Maps & Location
+  google_maps_flutter: ^2.12.0
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  timeago: ^3.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  # Code Generation
+  build_runner: ^2.4.14
+  freezed: ^3.0.0
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.4
+  riverpod_lint: ^2.6.4
+
+  # Testing
+  mockito: ^5.4.5
+  fake_cloud_firestore: ^3.1.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- /users/{userId} ---
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // --- /items/{itemId} ---
+    match /items/{itemId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+
+    // --- /reservations/{reservationId} ---
+    match /reservations/{reservationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.renterId ||
+        request.auth.uid == resource.data.ownerId
+      );
+      allow create: if isAuthenticated();
+      // Only owner can confirm/reject; only renter can cancel
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid == resource.data.renterId
+      );
+      allow delete: if false;
+    }
+
+    // --- /chats/{chatId}/messages/{messageId} ---
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid in chatId.split('_');
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() &&
+          request.auth.uid in chatId.split('_');
+        allow create: if isAuthenticated() &&
+          request.auth.uid in chatId.split('_');
+        allow update, delete: if false;
+      }
+    }
+  }
+}

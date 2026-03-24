@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/presentation/auth_providers.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/recover_password_screen.dart';
+import '../../features/items/presentation/item_feed_screen.dart';
+import '../../features/items/presentation/create_item_screen.dart';
+import '../../features/items/presentation/item_detail_screen.dart';
+
+class AuthNotifierForRouter extends ChangeNotifier {
+  AuthNotifierForRouter(Ref ref) {
+    _subscription = ref.listen<AsyncValue<dynamic>>(
+      authStateProvider,
+      (_, _) => notifyListeners(),
+    );
+  }
+
+  late final ProviderSubscription<AsyncValue<dynamic>> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.close();
+    super.dispose();
+  }
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final authChangeNotifier = AuthNotifierForRouter(ref);
+
+  ref.onDispose(() => authChangeNotifier.dispose());
+
+  return GoRouter(
+    initialLocation: '/login',
+    refreshListenable: authChangeNotifier,
+    redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final isLoggedIn = authState.valueOrNull != null;
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/recover';
+
+      if (!isLoggedIn && !isAuthRoute) return '/login';
+      if (isLoggedIn && isAuthRoute) return '/';
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/recover',
+        builder: (context, state) => const RecoverPasswordScreen(),
+      ),
+      GoRoute(path: '/', builder: (context, state) => const ItemFeedScreen()),
+      GoRoute(
+        path: '/items/create',
+        builder: (context, state) => const CreateItemScreen(),
+      ),
+      GoRoute(
+        path: '/items/:id',
+        builder: (context, state) =>
+            ItemDetailScreen(itemId: state.pathParameters['id']!),
+      ),
+    ],
+  );
+});
