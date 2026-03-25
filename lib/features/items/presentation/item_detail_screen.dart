@@ -129,7 +129,7 @@ class _ItemDetailBody extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () {
                       // Chat navigation
-                    }
+                    },
                     icon: const Icon(Icons.chat_outlined),
                     label: const Text('Contactar al propietario'),
                     style: OutlinedButton.styleFrom(
