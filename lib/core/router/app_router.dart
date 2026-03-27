@@ -10,6 +10,12 @@ import '../../features/items/presentation/item_feed_screen.dart';
 import '../../features/items/presentation/create_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
 
+const _authRoutes = [
+  '/login',
+  '/register',
+  '/recover',
+];
+
 class AuthNotifierForRouter extends ChangeNotifier {
   AuthNotifierForRouter(Ref ref) {
     _subscription = ref.listen<AsyncValue<dynamic>>(
@@ -38,10 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = ref.read(authStateProvider);
       final isLoggedIn = authState.valueOrNull != null;
-      final isAuthRoute =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register' ||
-          state.matchedLocation == '/recover';
+      final isAuthRoute = _authRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/';
@@ -67,6 +70,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             ItemDetailScreen(itemId: state.pathParameters['id']!),
       ),
+      // TODO: add /reservations, /chat, /profile routes
     ],
   );
 });

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../presentation/item_providers.dart';
 import '../domain/item.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../../core/constants/app_constants.dart';
 
 class CreateItemScreen extends ConsumerStatefulWidget {
   const CreateItemScreen({super.key});
@@ -20,15 +21,6 @@ class _CreateItemScreenState extends ConsumerState<CreateItemScreen> {
   final _priceController = TextEditingController();
   String _selectedCategory = 'otros';
   bool _isSubmitting = false;
-
-  static const _categories = [
-    'herramientas',
-    'deporte',
-    'electrónica',
-    'hogar',
-    'vehículos',
-    'otros',
-  ];
 
   @override
   void dispose() {
@@ -134,11 +126,13 @@ class _CreateItemScreenState extends ConsumerState<CreateItemScreen> {
                       prefixIcon: Icon(Icons.euro),
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty)
+                      if (v == null || v.trim().isEmpty) {
                         return 'Campo obligatorio';
+                      }
                       final price = double.tryParse(v.trim());
-                      if (price == null || price <= 0)
+                      if (price == null || price <= 0) {
                         return 'Precio no válido';
+                      }
                       return null;
                     },
                   ),
@@ -151,7 +145,7 @@ class _CreateItemScreenState extends ConsumerState<CreateItemScreen> {
                       labelText: 'Categoría',
                       prefixIcon: Icon(Icons.category_outlined),
                     ),
-                    items: _categories
+                    items: AppConstants.itemCategories
                         .map(
                           (c) => DropdownMenuItem(
                             value: c,

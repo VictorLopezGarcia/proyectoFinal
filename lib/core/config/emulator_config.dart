@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class EmulatorConfig {
   static const bool useEmulators = true;
 

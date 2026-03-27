@@ -99,7 +99,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Introduce tu email';
                         }
-                        if (!value.contains('@')) {
+                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailRegex.hasMatch(value.trim())) {
                           return 'Email no válido';
                         }
                         return null;

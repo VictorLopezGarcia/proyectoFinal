@@ -5,4 +5,13 @@ abstract class AppConstants {
   static const int maxProfilePhotoSizeMb = 5;
   static const int defaultSearchRadiusKm = 10;
   static const int minRentalDays = 1;
+
+  static const List<String> itemCategories = [
+    'herramientas',
+    'deporte',
+    'electrónica',
+    'hogar',
+    'vehículos',
+    'otros',
+  ];
 }
