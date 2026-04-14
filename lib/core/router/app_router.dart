@@ -9,6 +9,8 @@ import '../../features/auth/presentation/recover_password_screen.dart';
 import '../../features/items/presentation/item_feed_screen.dart';
 import '../../features/items/presentation/create_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
+import '../../features/reservations/presentation/request_reservation_screen.dart';
+import '../../features/reservations/presentation/my_reservations_screen.dart';
 
 const _authRoutes = [
   '/login',
@@ -70,7 +72,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             ItemDetailScreen(itemId: state.pathParameters['id']!),
       ),
-      // TODO: add /reservations, /chat, /profile routes
+      GoRoute(
+        path: '/items/:id/reserve',
+        builder: (context, state) =>
+            RequestReservationScreen(itemId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/reservations',
+        builder: (context, state) => const MyReservationsScreen(),
+      ),
+      // TODO: add /chat, /profile routes
     ],
   );
 });

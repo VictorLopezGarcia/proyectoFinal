@@ -126,6 +126,14 @@ class _ItemDetailBody extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () {
+                      context.push('/items/${item.id}/reserve');
+                    },
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    label: const Text('Reservar'),
+                  ),
+                  const SizedBox(height: 12),
                   OutlinedButton.icon(
                     onPressed: () {
                       // Chat navigation
