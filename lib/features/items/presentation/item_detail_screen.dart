@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../presentation/item_providers.dart';
 import '../domain/item.dart';
@@ -135,8 +136,14 @@ class _ItemDetailBody extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      // Chat navigation
+                    onPressed: () async {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) return;
+                      
+                      final participants = [user.uid, item.ownerId]..sort();
+                      final chatId = participants.join('_');
+                      
+                      context.push('/chats/$chatId?otherUserId=${item.ownerId}');
                     },
                     icon: const Icon(Icons.chat_outlined),
                     label: const Text('Contactar al propietario'),

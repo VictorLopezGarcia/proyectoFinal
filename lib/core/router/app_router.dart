@@ -11,6 +11,8 @@ import '../../features/items/presentation/create_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
 import '../../features/reservations/presentation/request_reservation_screen.dart';
 import '../../features/reservations/presentation/my_reservations_screen.dart';
+import '../../features/chat/presentation/chat_list_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
 
 const _authRoutes = [
   '/login',
@@ -81,7 +83,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/reservations',
         builder: (context, state) => const MyReservationsScreen(),
       ),
-      // TODO: add /chat, /profile routes
+      GoRoute(
+        path: '/chats',
+        builder: (context, state) => const ChatListScreen(),
+      ),
+      GoRoute(
+        path: '/chats/:id',
+        builder: (context, state) => ChatScreen(
+          chatId: state.pathParameters['id']!,
+          otherUserId: state.uri.queryParameters['otherUserId'] ?? '',
+        ),
+      ),
+      // TODO: add /profile routes
     ],
   );
 });

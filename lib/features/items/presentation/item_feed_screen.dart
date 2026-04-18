@@ -49,6 +49,18 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
             tooltip: 'Mi perfil',
           ),
           IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => context.push('/items/create'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () => context.push('/reservations'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_outlined),
+            onPressed: () => context.push('/chats'),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
             tooltip: 'Cerrar sesión',
