@@ -13,6 +13,7 @@ import '../../features/reservations/presentation/request_reservation_screen.dart
 import '../../features/reservations/presentation/my_reservations_screen.dart';
 import '../../features/chat/presentation/chat_list_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 
 const _authRoutes = [
   '/login',
@@ -94,7 +95,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           otherUserId: state.uri.queryParameters['otherUserId'] ?? '',
         ),
       ),
-      // TODO: add /profile routes
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
     ],
   );
 });

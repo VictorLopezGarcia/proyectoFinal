@@ -45,7 +45,7 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outlined),
-            onPressed: () {},
+            onPressed: () => context.push('/profile'),
             tooltip: 'Mi perfil',
           ),
           IconButton(
