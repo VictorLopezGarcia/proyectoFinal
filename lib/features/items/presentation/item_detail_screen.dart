@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../presentation/item_providers.dart';
 import '../domain/item.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../chat/presentation/chat_providers.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
   final String itemId;
@@ -106,12 +108,31 @@ class _ItemDetailBody extends ConsumerWidget {
 
                 // Location info
                 Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.location_on_outlined),
-                    title: const Text('Ubicación aproximada'),
-                    subtitle: Text(
-                      '${item.approximateLat.toStringAsFixed(3)}, ${item.approximateLng.toStringAsFixed(3)}',
-                    ),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.location_on_outlined),
+                        title: const Text('Ubicación aproximada'),
+                        subtitle: Text(
+                          '${item.approximateLat.toStringAsFixed(3)}, ${item.approximateLng.toStringAsFixed(3)}',
+                        ),
+                      ),
+                      SizedBox(
+                        height: 200,
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(item.approximateLat, item.approximateLng),
+                            zoom: 14,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: MarkerId(item.id),
+                              position: LatLng(item.approximateLat, item.approximateLng),
+                            ),
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -127,23 +148,23 @@ class _ItemDetailBody extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: () {
-                      context.push('/items/${item.id}/reserve');
-                    },
-                    icon: const Icon(Icons.calendar_month_outlined),
-                    label: const Text('Reservar'),
-                  ),
-                  const SizedBox(height: 12),
                   OutlinedButton.icon(
                     onPressed: () async {
                       final user = FirebaseAuth.instance.currentUser;
                       if (user == null) return;
-                      
+
                       final participants = [user.uid, item.ownerId]..sort();
                       final chatId = participants.join('_');
-                      
-                      context.push('/chats/$chatId?otherUserId=${item.ownerId}');
+
+                      // Ensure chat exists before navigation
+                      await ref
+                          .read(chatRepositoryProvider)
+                          .createChat(participants);
+
+                      if (context.mounted) {
+                        context.push(
+                            '/chats/$chatId?otherUserId=${item.ownerId}');
+                      }
                     },
                     icon: const Icon(Icons.chat_outlined),
                     label: const Text('Contactar al propietario'),

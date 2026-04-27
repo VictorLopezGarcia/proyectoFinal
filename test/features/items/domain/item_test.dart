@@ -8,13 +8,16 @@ void main() {
         id: '1',
         title: 'Taladro',
         description: 'Potente',
+        photos: [],
         pricePerDay: 15.0,
         category: 'herramientas',
         ownerId: 'user1',
+        status: 'available',
         approximateLat: 40.0,
         approximateLng: -3.0,
         exactLat: 40.01,
         exactLng: -3.01,
+        createdAt: DateTime.now(),
       );
 
       final updatedItem = item.copyWith(
@@ -32,6 +35,7 @@ void main() {
         id: '1',
         title: 'Taladro',
         description: 'Potente',
+        photos: [],
         pricePerDay: 15.0,
         category: 'herramientas',
         ownerId: 'user1',
@@ -40,6 +44,7 @@ void main() {
         approximateLng: -3.0,
         exactLat: 40.01,
         exactLng: -3.01,
+        createdAt: DateTime.now(),
       );
 
       final map = item.toFirestore();

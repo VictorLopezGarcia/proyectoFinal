@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 import '../presentation/item_providers.dart';
@@ -15,7 +16,26 @@ class ItemFeedScreen extends ConsumerStatefulWidget {
 
 class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
   String? _selectedCategory;
+  bool _filterByLocation = false;
+  Position? _currentPosition;
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      if (mounted) {
+        setState(() => _currentPosition = position);
+      }
+    } catch (e) {
+      // Location permissions might be denied
+    }
+  }
 
   static const _categories = [
     'herramientas',
@@ -37,16 +57,20 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
     final itemsAsync = ref.watch(
       itemsStreamProvider(ItemFilter(category: _selectedCategory)),
     );
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('RentMyStuff'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outlined),
-            onPressed: () => context.push('/profile'),
-            tooltip: 'Mi perfil',
+            icon: Icon(
+              _filterByLocation ? Icons.location_on : Icons.location_on_outlined,
+              color: _filterByLocation ? Colors.blue : null,
+            ),
+            onPressed: () {
+              setState(() => _filterByLocation = !_filterByLocation);
+            },
+            tooltip: 'Filtrar por ubicación',
           ),
           IconButton(
             icon: const Icon(Icons.add),
@@ -69,7 +93,6 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
       ),
       body: Column(
         children: [
-          // Category filter chips
           SizedBox(
             height: 56,
             child: ListView(
@@ -90,55 +113,58 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
                     child: FilterChip(
                       label: Text(cat[0].toUpperCase() + cat.substring(1)),
                       selected: _selectedCategory == cat,
-                      onSelected: (_) => setState(
-                        () => _selectedCategory =
-                            _selectedCategory == cat ? null : cat,
-                      ),
+                      onSelected: (_) => setState(() => _selectedCategory = cat),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Item grid
+          const SizedBox(height: 16),
           Expanded(
             child: itemsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
               data: (items) {
-                if (items.isEmpty) {
-                  return Center(
+                final filteredItems = _filterByLocation && _currentPosition != null
+                    ? items.where((item) {
+                        final distance = Geolocator.distanceBetween(
+                          _currentPosition!.latitude,
+                          _currentPosition!.longitude,
+                          item.approximateLat,
+                          item.approximateLng,
+                        );
+                        return distance <= 10000;
+                      }).toList()
+                    : items;
+
+                if (filteredItems.isEmpty) {
+                  return const Center(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inventory_2_outlined,
-                            size: 64, color: theme.colorScheme.onSurfaceVariant),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No hay objetos disponibles',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text('¡Sé el primero en publicar uno!'),
+                        Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('No hay objetos disponibles'),
                       ],
                     ),
                   );
                 }
 
                 return GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 300,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
                   ),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) =>
-                      _ItemCard(item: items[index]),
+                  itemCount: filteredItems.length,
+                  itemBuilder: (context, index) {
+                    return _ItemCard(item: filteredItems[index]);
+                  },
                 );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
             ),
           ),
         ],
@@ -168,7 +194,6 @@ class _ItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Photo placeholder
             Expanded(
               flex: 3,
               child: Container(
@@ -183,7 +208,6 @@ class _ItemCard extends StatelessWidget {
                       ),
               ),
             ),
-            // Info
             Expanded(
               flex: 2,
               child: Padding(
