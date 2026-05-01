@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../presentation/item_providers.dart';
 import '../domain/item.dart';
-import '../../auth/presentation/auth_providers.dart';
 
 class ItemFeedScreen extends ConsumerStatefulWidget {
   const ItemFeedScreen({super.key});
@@ -60,39 +59,30 @@ class _ItemFeedScreenState extends ConsumerState<ItemFeedScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('RentMyStuff'),
+        title: const Text(
+          'RentMyStuff',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: Icon(
-              _filterByLocation ? Icons.location_on : Icons.location_on_outlined,
-              color: _filterByLocation ? Colors.blue : null,
+              _filterByLocation
+                  ? Icons.location_on
+                  : Icons.location_on_outlined,
+              color: _filterByLocation
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
             ),
             onPressed: () {
               setState(() => _filterByLocation = !_filterByLocation);
             },
             tooltip: 'Filtrar por ubicación',
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push('/items/create'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () => context.push('/reservations'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat_outlined),
-            onPressed: () => context.push('/chats'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
-            tooltip: 'Cerrar sesión',
-          ),
         ],
       ),
       body: Column(
         children: [
+          // Category filter chips
           SizedBox(
             height: 56,
             child: ListView(
@@ -194,6 +184,7 @@ class _ItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Photo placeholder
             Expanded(
               flex: 3,
               child: Container(
@@ -208,6 +199,7 @@ class _ItemCard extends StatelessWidget {
                       ),
               ),
             ),
+            // Info
             Expanded(
               flex: 2,
               child: Padding(

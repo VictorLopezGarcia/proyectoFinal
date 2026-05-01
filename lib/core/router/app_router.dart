@@ -6,14 +6,11 @@ import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/recover_password_screen.dart';
-import '../../features/items/presentation/item_feed_screen.dart';
 import '../../features/items/presentation/create_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
 import '../../features/reservations/presentation/request_reservation_screen.dart';
-import '../../features/reservations/presentation/my_reservations_screen.dart';
-import '../../features/chat/presentation/chat_list_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
+import '../layout/home_shell.dart';
 
 const _authRoutes = [
   '/login',
@@ -65,7 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/recover',
         builder: (context, state) => const RecoverPasswordScreen(),
       ),
-      GoRoute(path: '/', builder: (context, state) => const ItemFeedScreen()),
+      GoRoute(path: '/', builder: (context, state) => const HomeShell()),
       GoRoute(
         path: '/items/create',
         builder: (context, state) => const CreateItemScreen(),
@@ -81,23 +78,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             RequestReservationScreen(itemId: state.pathParameters['id']!),
       ),
       GoRoute(
-        path: '/reservations',
-        builder: (context, state) => const MyReservationsScreen(),
-      ),
-      GoRoute(
-        path: '/chats',
-        builder: (context, state) => const ChatListScreen(),
-      ),
-      GoRoute(
         path: '/chats/:id',
         builder: (context, state) => ChatScreen(
           chatId: state.pathParameters['id']!,
           otherUserId: state.uri.queryParameters['otherUserId'] ?? '',
         ),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );
