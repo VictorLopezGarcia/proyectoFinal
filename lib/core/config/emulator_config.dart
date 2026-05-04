@@ -1,5 +1,5 @@
 class EmulatorConfig {
-  static const bool useEmulators = true;
+  static const bool useEmulators = false;
 
   static const String firestoreHost = '127.0.0.1';
   static const int firestorePort = 8080;

@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Firebase configuration for the emulator environment.
+/// Firebase configuration for production (project rentmystuff-9456d).
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) return web;
@@ -18,28 +18,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'rent-my-stuff-dev',
-    authDomain: 'localhost',
-    storageBucket: 'rent-my-stuff-dev.appspot.com',
+    apiKey: 'AIzaSyAwegXx-SIQ73QILhTHrlqgtxKReTBTpJ8',
+    appId: '1:924831462872:web:8d17db7b4881a3d328eead',
+    messagingSenderId: '924831462872',
+    projectId: 'rentmystuff-9456d',
+    authDomain: 'rentmystuff-9456d.firebaseapp.com',
+    storageBucket: 'rentmystuff-9456d.firebasestorage.app',
+    measurementId: 'G-4D2Y41F1ZS',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:000000000000:android:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'rent-my-stuff-dev',
-    storageBucket: 'rent-my-stuff-dev.appspot.com',
+    apiKey: 'AIzaSyAwegXx-SIQ73QILhTHrlqgtxKReTBTpJ8',
+    appId: '1:924831462872:android:8d17db7b4881a3d328eead',
+    messagingSenderId: '924831462872',
+    projectId: 'rentmystuff-9456d',
+    storageBucket: 'rentmystuff-9456d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'rent-my-stuff-dev',
-    storageBucket: 'rent-my-stuff-dev.appspot.com',
+    apiKey: 'AIzaSyAwegXx-SIQ73QILhTHrlqgtxKReTBTpJ8',
+    appId: '1:924831462872:ios:8d17db7b4881a3d328eead',
+    messagingSenderId: '924831462872',
+    projectId: 'rentmystuff-9456d',
+    storageBucket: 'rentmystuff-9456d.firebasestorage.app',
     iosBundleId: 'com.rentmystuff.rentMyStuff',
   );
 }
