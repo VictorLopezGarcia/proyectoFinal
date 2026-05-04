@@ -4,4 +4,5 @@ abstract class FirebaseConstants {
   static const String reservationsCollection = 'reservations';
   static const String chatsCollection = 'chats';
   static const String messagesSubcollection = 'messages';
+  static const String ratingsCollection = 'ratings';
 }
