@@ -11,6 +11,7 @@ import '../../features/items/presentation/item_detail_screen.dart';
 import '../../features/reservations/presentation/request_reservation_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/ratings/presentation/rate_user_screen.dart';
+import '../../features/profile/presentation/public_profile_screen.dart';
 import '../layout/home_shell.dart';
 
 const _authRoutes = [
@@ -84,6 +85,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           chatId: state.pathParameters['id']!,
           otherUserId: state.uri.queryParameters['otherUserId'] ?? '',
         ),
+      ),
+      GoRoute(
+        path: '/profile/:uid',
+        builder: (context, state) =>
+            PublicProfileScreen(userId: state.pathParameters['uid']!),
       ),
       GoRoute(
         path: '/rate/:reservationId',
