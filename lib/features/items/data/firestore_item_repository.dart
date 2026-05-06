@@ -14,7 +14,7 @@ class FirestoreItemRepository implements ItemRepository {
       _firestore.collection(FirebaseConstants.itemsCollection);
 
   @override
-  Stream<List<Item>> getItems({String? category, double? maxPrice}) {
+  Stream<List<Item>> getItems({String? category, double? maxPrice, String? searchQuery}) {
     Query query = _itemsRef.where('status', isEqualTo: 'available');
 
     if (category != null && category.isNotEmpty) {
@@ -24,8 +24,20 @@ class FirestoreItemRepository implements ItemRepository {
       query = query.where('pricePerDay', isLessThanOrEqualTo: maxPrice);
     }
 
-    return query.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => Item.fromFirestore(doc)).toList());
+    return query.snapshots().map((snapshot) {
+      var items = snapshot.docs.map((doc) => Item.fromFirestore(doc)).toList();
+
+      // Filtrar por búsqueda de texto en el cliente
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        final lowerQuery = searchQuery.toLowerCase();
+        items = items.where((item) =>
+          item.title.toLowerCase().contains(lowerQuery) ||
+          item.description.toLowerCase().contains(lowerQuery)
+        ).toList();
+      }
+
+      return items;
+    });
   }
 
   @override

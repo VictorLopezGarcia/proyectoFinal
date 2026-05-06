@@ -10,32 +10,28 @@ class Item extends Equatable {
   final String category;
   final String ownerId;
   final String status;
-  final double approximateLat;
-  final double approximateLng;
-  final double exactLat;
-  final double exactLng;
-  final DateTime? createdAt;
+  final DateTime createdAt;
+  final String? locationName;
+  final double? lat;
+  final double? lng;
 
   const Item({
     required this.id,
     required this.title,
     required this.description,
-    this.photos = const [],
+    required this.photos,
     required this.pricePerDay,
     required this.category,
     required this.ownerId,
-    this.status = 'available',
-    required this.approximateLat,
-    required this.approximateLng,
-    required this.exactLat,
-    required this.exactLng,
-    this.createdAt,
+    required this.status,
+    required this.createdAt,
+    this.locationName,
+    this.lat,
+    this.lng,
   });
 
   factory Item.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final approxLocation = data['approximateLocation'] as Map<String, dynamic>?;
-    final exactLocation = data['exactLocation'] as Map<String, dynamic>?;
     return Item(
       id: doc.id,
       title: data['title'] ?? '',
@@ -45,11 +41,10 @@ class Item extends Equatable {
       category: data['category'] ?? '',
       ownerId: data['ownerId'] ?? '',
       status: data['status'] ?? 'available',
-      approximateLat: (approxLocation?['lat'] ?? 0).toDouble(),
-      approximateLng: (approxLocation?['lng'] ?? 0).toDouble(),
-      exactLat: (exactLocation?['lat'] ?? 0).toDouble(),
-      exactLng: (exactLocation?['lng'] ?? 0).toDouble(),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      locationName: data['locationName'] as String?,
+      lat: (data['lat'] as num?)?.toDouble(),
+      lng: (data['lng'] as num?)?.toDouble(),
     );
   }
 
@@ -62,9 +57,10 @@ class Item extends Equatable {
       'category': category,
       'ownerId': ownerId,
       'status': status,
-      'approximateLocation': {'lat': approximateLat, 'lng': approximateLng},
-      'exactLocation': {'lat': exactLat, 'lng': exactLng},
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': createdAt,
+      if (locationName != null) 'locationName': locationName,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
     };
   }
 
@@ -77,11 +73,10 @@ class Item extends Equatable {
     String? category,
     String? ownerId,
     String? status,
-    double? approximateLat,
-    double? approximateLng,
-    double? exactLat,
-    double? exactLng,
     DateTime? createdAt,
+    String? locationName,
+    double? lat,
+    double? lng,
   }) {
     return Item(
       id: id ?? this.id,
@@ -92,14 +87,26 @@ class Item extends Equatable {
       category: category ?? this.category,
       ownerId: ownerId ?? this.ownerId,
       status: status ?? this.status,
-      approximateLat: approximateLat ?? this.approximateLat,
-      approximateLng: approximateLng ?? this.approximateLng,
-      exactLat: exactLat ?? this.exactLat,
-      exactLng: exactLng ?? this.exactLng,
       createdAt: createdAt ?? this.createdAt,
+      locationName: locationName ?? this.locationName,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
     );
   }
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        photos,
+        pricePerDay,
+        category,
+        ownerId,
+        status,
+        createdAt,
+        locationName,
+        lat,
+        lng,
+      ];
 }
