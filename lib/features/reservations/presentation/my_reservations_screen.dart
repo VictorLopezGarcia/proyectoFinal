@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rent_my_stuff/features/reservations/domain/reservation.dart';
 import 'package:rent_my_stuff/features/reservations/presentation/reservation_providers.dart';
+import 'package:rent_my_stuff/core/layout/responsive_container.dart';
 
 class MyReservationsScreen extends ConsumerStatefulWidget {
   const MyReservationsScreen({super.key});
@@ -40,41 +42,44 @@ class _MyReservationsScreenState extends ConsumerState<MyReservationsScreen>
     final reservations = ref.watch(userReservationsProvider(user.uid));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis Reservas'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Alquilado'),
-            Tab(text: 'Prestado'),
-          ],
-        ),
-      ),
-      body: reservations.when(
-        data: (allReservations) {
-          final rented = allReservations
-              .where((r) => r.renterId == user.uid)
-              .toList();
-          final lent = allReservations
-              .where((r) => r.ownerId == user.uid)
-              .toList();
-
-          return TabBarView(
+      body: Column(
+        children: [
+          TabBar(
             controller: _tabController,
-            children: [
-              _ReservationsList(reservations: rented, userRole: 'renter'),
-              _ReservationsList(reservations: lent, userRole: 'owner'),
+            tabs: const [
+              Tab(text: 'Alquilado'),
+              Tab(text: 'Prestado'),
             ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+          ),
+          Expanded(
+            child: reservations.when(
+              data: (allReservations) {
+                final rented = allReservations
+                    .where((r) => r.renterId == user.uid)
+                    .toList();
+                final lent = allReservations
+                    .where((r) => r.ownerId == user.uid)
+                    .toList();
+
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _ReservationsList(reservations: rented, userRole: 'renter'),
+                    _ReservationsList(reservations: lent, userRole: 'owner'),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ReservationsList extends StatelessWidget {
+class _ReservationsList extends ConsumerWidget {
   final List<Reservation> reservations;
   final String userRole;
 
@@ -84,7 +89,9 @@ class _ReservationsList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (reservations.isEmpty) {
       return Center(
         child: Column(
@@ -93,10 +100,13 @@ class _ReservationsList extends StatelessWidget {
             Icon(
               Icons.inbox_outlined,
               size: 64,
-              color: Colors.grey.shade400,
+              color: colorScheme.onSurfaceVariant.withAlpha(128),
             ),
             const SizedBox(height: 16),
-            const Text('No tienes reservas'),
+            Text(
+              'No tienes reservas',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
           ],
         ),
       );
@@ -104,65 +114,127 @@ class _ReservationsList extends StatelessWidget {
 
     return ListView.builder(
       itemCount: reservations.length,
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemBuilder: (context, index) {
         final reservation = reservations[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            title: Text(reservation.itemTitle),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${DateFormat('dd/MM/yyyy').format(reservation.startDate)} - ${DateFormat('dd/MM/yyyy').format(reservation.endDate)}',
+        final isOwner = userRole == 'owner';
+        final actionable = (isOwner &&
+                reservation.status == ReservationStatus.pending) ||
+            (isOwner && reservation.status == ReservationStatus.confirmed) ||
+            (!isOwner && reservation.status == ReservationStatus.completed);
+
+        return ResponsiveContainer(
+          maxWidth: 800,
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => context.push('/reservations/${reservation.id}'),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                reservation.itemTitle,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${DateFormat('dd/MM/yyyy').format(reservation.startDate)} - ${DateFormat('dd/MM/yyyy').format(reservation.endDate)}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${reservation.totalPrice.toStringAsFixed(2)} €',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildStatusChip(context, reservation.status),
+                      ],
+                    ),
+                    if (actionable) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.touch_app,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Text(
+                            isOwner
+                                ? (reservation.status == ReservationStatus.pending
+                                    ? 'Toca para aprobar/rechazar'
+                                    : 'Toca para gestionar')
+                                : 'Toca para valorar',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
-                Text(
-                  '${reservation.totalPrice.toStringAsFixed(2)} €',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+              ),
             ),
-            trailing: _buildStatusChip(reservation.status),
-            onTap: () {
-              // TODO: navigate to reservation detail
-            },
           ),
         );
       },
     );
   }
 
-  Widget _buildStatusChip(ReservationStatus status) {
-    Color color;
+  Widget _buildStatusChip(BuildContext context, ReservationStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
     String label;
+    Color color;
 
     switch (status) {
       case ReservationStatus.pending:
-        color = Colors.orange;
+        color = colorScheme.primary;
         label = 'Pendiente';
         break;
       case ReservationStatus.confirmed:
-        color = Colors.green;
+        color = colorScheme.tertiary;
         label = 'Confirmada';
         break;
       case ReservationStatus.rejected:
-        color = Colors.red;
+        color = colorScheme.error;
         label = 'Rechazada';
         break;
       case ReservationStatus.cancelled:
-        color = Colors.grey;
+        color = colorScheme.onSurfaceVariant;
         label = 'Cancelada';
         break;
       case ReservationStatus.completed:
-        color = Colors.blue;
+        color = colorScheme.secondary;
         label = 'Completada';
         break;
     }
 
     return Chip(
       label: Text(label),
-      backgroundColor: color.withValues(alpha: 0.2),
-      side: BorderSide(color: color),
+      backgroundColor: color.withAlpha(25),
+      side: BorderSide(color: color.withAlpha(128)),
     );
   }
 }
+
