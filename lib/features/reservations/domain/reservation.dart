@@ -33,18 +33,18 @@ class Reservation {
     final data = doc.data() as Map<String, dynamic>;
     return Reservation(
       id: doc.id,
-      itemId: data['itemId'] as String,
-      itemTitle: data['itemTitle'] as String,
-      ownerId: data['ownerId'] as String,
-      renterId: data['renterId'] as String,
-      startDate: (data['startDate'] as Timestamp).toDate(),
-      endDate: (data['endDate'] as Timestamp).toDate(),
-      totalPrice: (data['totalPrice'] as num).toDouble(),
+      itemId: data['itemId'] as String? ?? '',
+      itemTitle: data['itemTitle'] as String? ?? '',
+      ownerId: data['ownerId'] as String? ?? '',
+      renterId: data['renterId'] as String? ?? '',
+      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      endDate: (data['endDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      totalPrice: (data['totalPrice'] as num?)?.toDouble() ?? 0.0,
       status: ReservationStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.name == (data['status'] ?? ''),
         orElse: () => ReservationStatus.pending,
       ),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: data['updatedAt'] != null
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,

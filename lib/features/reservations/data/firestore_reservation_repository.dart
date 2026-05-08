@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rent_my_stuff/core/constants/firebase_constants.dart';
 import 'package:rent_my_stuff/features/reservations/data/reservation_repository.dart';
@@ -22,6 +24,17 @@ class FirestoreReservationRepository implements ReservationRepository {
         .collection(FirebaseConstants.reservationsCollection)
         .doc(id)
         .update(reservation.toFirestore()..['updatedAt'] = FieldValue.serverTimestamp());
+  }
+
+  @override
+  Future<void> updateStatus(String id, ReservationStatus status) async {
+    await _firestore
+        .collection(FirebaseConstants.reservationsCollection)
+        .doc(id)
+        .update({
+      'status': status.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   @override
@@ -54,6 +67,49 @@ class FirestoreReservationRepository implements ReservationRepository {
     final all = [...ownerReservations, ...renterReservations];
     all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return all;
+  }
+
+  @override
+  Stream<List<Reservation>> watchUserReservations(String userId) {
+    final controller = StreamController<List<Reservation>>.broadcast();
+    List<Reservation>? ownerList;
+    List<Reservation>? renterList;
+
+    void doEmit() {
+      if (ownerList != null && renterList != null) {
+        final all = [...ownerList!, ...renterList!];
+        all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        controller.add(all);
+      }
+    }
+
+    final ownerSub = _firestore
+        .collection(FirebaseConstants.reservationsCollection)
+        .where('ownerId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snap) {
+      ownerList = snap.docs.map((doc) => Reservation.fromFirestore(doc)).toList();
+      doEmit();
+    });
+
+    final renterSub = _firestore
+        .collection(FirebaseConstants.reservationsCollection)
+        .where('renterId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snap) {
+      renterList = snap.docs.map((doc) => Reservation.fromFirestore(doc)).toList();
+      doEmit();
+    });
+
+    controller.onCancel = () async {
+      await ownerSub.cancel();
+      await renterSub.cancel();
+      await controller.close();
+    };
+
+    return controller.stream;
   }
 
   @override
