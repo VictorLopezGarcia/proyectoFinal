@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_my_stuff/features/chat/presentation/chat_providers.dart';
 import 'package:rent_my_stuff/features/profile/presentation/profile_providers.dart';
+import 'package:rent_my_stuff/core/layout/responsive_container.dart';
 
 class ChatListScreen extends ConsumerWidget {
   const ChatListScreen({super.key});
@@ -23,9 +24,6 @@ class ChatListScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis Chats'),
-      ),
       body: chats.when(
         data: (chatList) {
           if (chatList.isEmpty) {
@@ -57,26 +55,30 @@ class ChatListScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: chatList.length,
-            separatorBuilder: (_, _) => const Divider(height: 1, indent: 76),
-            itemBuilder: (context, index) {
-              final chat = chatList[index];
-              final otherUserId = chat.participants.firstWhere(
-                (id) => id != user.uid,
-                orElse: () => chat.participants.isNotEmpty
-                    ? chat.participants[0]
-                    : '',
-              );
+          return ResponsiveContainer(
+            maxWidth: 800,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: chatList.length,
+              separatorBuilder: (_, _) =>
+                  const Divider(height: 1, indent: 76),
+              itemBuilder: (context, index) {
+                final chat = chatList[index];
+                final otherUserId = chat.participants.firstWhere(
+                  (id) => id != user.uid,
+                  orElse: () => chat.participants.isNotEmpty
+                      ? chat.participants[0]
+                      : '',
+                );
 
-              return _ChatTile(
-                chatId: chat.id,
-                otherUserId: otherUserId,
-                lastMessage: chat.lastMessage,
-                updatedAt: chat.updatedAt,
-              );
-            },
+                return _ChatTile(
+                  chatId: chat.id,
+                  otherUserId: otherUserId,
+                  lastMessage: chat.lastMessage,
+                  updatedAt: chat.updatedAt,
+                );
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -136,14 +138,17 @@ class _ChatTile extends ConsumerWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        radius: 24,
-        backgroundColor: colorScheme.primaryContainer,
-        child: Text(
-          displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-          style: TextStyle(
-            color: colorScheme.onPrimaryContainer,
-            fontWeight: FontWeight.bold,
+      leading: GestureDetector(
+        onTap: () => context.push('/profile/$otherUserId'),
+        child: CircleAvatar(
+          radius: 24,
+          backgroundColor: colorScheme.primaryContainer,
+          child: Text(
+            displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+            style: TextStyle(
+              color: colorScheme.onPrimaryContainer,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

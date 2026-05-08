@@ -73,23 +73,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Text(
-                displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                style: TextStyle(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+        title: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => context.push('/profile/${widget.otherUserId}'),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: colorScheme.primaryContainer,
+                child: Text(
+                  displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                  style: TextStyle(
+                    color: colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Text(displayName),
-          ],
+              const SizedBox(width: 12),
+              Text(displayName),
+            ],
+          ),
         ),
         centerTitle: false,
       ),

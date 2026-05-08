@@ -20,10 +20,52 @@ class _RequestReservationScreenState extends ConsumerState<RequestReservationScr
   bool _isSubmitting = false;
   String? _errorMessage;
   double? _totalPrice;
+  List<DateTimeRange> _blockedRanges = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBlockedDates();
+  }
+
+  Future<void> _loadBlockedDates() async {
+    try {
+      final reservations = await ref.read(reservationRepositoryProvider).getItemReservations(widget.itemId);
+      final blocked = reservations
+          .where((r) => r.status == ReservationStatus.confirmed || r.status == ReservationStatus.pending)
+          .map((r) => DateTimeRange(start: r.startDate, end: r.endDate))
+          .toList();
+      if (mounted) setState(() => _blockedRanges = blocked);
+    } catch (_) {}
+  }
+
+  bool _isDateBlocked(DateTime date) {
+    final day = DateTime(date.year, date.month, date.day);
+    for (final range in _blockedRanges) {
+      final rangeStart = DateTime(range.start.year, range.start.month, range.start.day);
+      final rangeEnd = DateTime(range.end.year, range.end.month, range.end.day);
+      if (!day.isBefore(rangeStart) && !day.isAfter(rangeEnd)) return true;
+    }
+    return false;
+  }
+
+  bool _rangeOverlapsBlocked(DateTimeRange range) {
+    for (final blocked in _blockedRanges) {
+      if (range.start.isBefore(blocked.end) && range.end.isAfter(blocked.start)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   Future<void> _handleSubmit() async {
     if (_selectedDateRange == null) {
       setState(() => _errorMessage = 'Selecciona las fechas de alquiler');
+      return;
+    }
+
+    if (_rangeOverlapsBlocked(_selectedDateRange!)) {
+      setState(() => _errorMessage = 'Las fechas seleccionadas incluyen días ya reservados');
       return;
     }
 
@@ -47,6 +89,16 @@ class _RequestReservationScreenState extends ConsumerState<RequestReservationScr
       if (user == null) {
         setState(() {
           _errorMessage = 'Debes iniciar sesión para reservar';
+          _isSubmitting = false;
+        });
+        return;
+      }
+
+      final hasOverlap = await ref.read(reservationRepositoryProvider)
+          .checkOverlap(widget.itemId, _selectedDateRange!.start, _selectedDateRange!.end);
+      if (hasOverlap) {
+        setState(() {
+          _errorMessage = 'Estas fechas ya están reservadas para este producto';
           _isSubmitting = false;
         });
         return;
@@ -107,12 +159,19 @@ class _RequestReservationScreenState extends ConsumerState<RequestReservationScr
                           context: context,
                           firstDate: DateTime.now(),
                           lastDate: DateTime.now().add(const Duration(days: 365)),
+                          selectableDayPredicate: (day, start, end) => !_isDateBlocked(day),
                         );
                         if (picked != null) {
-                          setState(() {
-                            _selectedDateRange = picked;
-                            _errorMessage = null;
-                          });
+                          if (_rangeOverlapsBlocked(picked)) {
+                            setState(() {
+                              _errorMessage = 'El rango incluye fechas ya reservadas';
+                            });
+                          } else {
+                            setState(() {
+                              _selectedDateRange = picked;
+                              _errorMessage = null;
+                            });
+                          }
                         }
                       },
                       icon: const Icon(Icons.calendar_today),
@@ -122,6 +181,17 @@ class _RequestReservationScreenState extends ConsumerState<RequestReservationScr
                             : 'Seleccionar fechas',
                       ),
                     ),
+                    if (_blockedRanges.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Los días no seleccionables están reservados',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
                     if (_selectedDateRange != null) ...[
                       const SizedBox(height: 8),
                       Text('Duración: $days día${days == 1 ? '' : 's'}'),

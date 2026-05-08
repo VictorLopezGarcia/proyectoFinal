@@ -12,7 +12,11 @@ final itemRepositoryProvider = Provider<ItemRepository>((ref) {
 final itemsStreamProvider = StreamProvider.family<List<Item>, ItemFilter>(
   (ref, filter) {
     final repo = ref.watch(itemRepositoryProvider);
-    return repo.getItems(category: filter.category, maxPrice: filter.maxPrice);
+    return repo.getItems(
+      category: filter.category,
+      maxPrice: filter.maxPrice,
+      searchQuery: filter.searchQuery,
+    );
   },
 );
 
@@ -33,9 +37,10 @@ final itemDetailProvider = FutureProvider.family<Item?, String>(
 class ItemFilter extends Equatable {
   final String? category;
   final double? maxPrice;
+  final String? searchQuery;
 
-  const ItemFilter({this.category, this.maxPrice});
+  const ItemFilter({this.category, this.maxPrice, this.searchQuery});
 
   @override
-  List<Object?> get props => [category, maxPrice];
+  List<Object?> get props => [category, maxPrice, searchQuery];
 }

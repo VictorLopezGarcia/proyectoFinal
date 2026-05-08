@@ -12,8 +12,8 @@ final reservationRepositoryProvider = Provider<ReservationRepository>((ref) {
   return FirestoreReservationRepository(ref.watch(firestoreProvider));
 });
 
-final userReservationsProvider = FutureProvider.family<List<Reservation>, String>((ref, userId) async {
-  return ref.watch(reservationRepositoryProvider).getUserReservations(userId);
+final userReservationsProvider = StreamProvider.family<List<Reservation>, String>((ref, userId) {
+  return ref.watch(reservationRepositoryProvider).watchUserReservations(userId);
 });
 
 final itemReservationsProvider = FutureProvider.family<List<Reservation>, String>((ref, itemId) async {

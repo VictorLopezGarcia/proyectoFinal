@@ -12,6 +12,13 @@ abstract class AppConstants {
     'electrónica',
     'hogar',
     'vehículos',
+    'moda',
+    'jardín',
+    'música',
+    'fotografía',
+    'cocina',
+    'viaje',
+    'infantil',
     'otros',
   ];
 }
