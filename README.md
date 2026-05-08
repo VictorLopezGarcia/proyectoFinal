@@ -6,24 +6,27 @@ Plataforma P2P de alquiler de objetos entre particulares.
 
 - **Frontend:** Flutter (Dart)
 - **Backend:** Firebase (Firestore, Auth, Storage)
-- **Infraestructura Local:** Docker Compose
 
 ## Requisitos Previos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y en ejecución
-- (Opcional) Flutter SDK 3.38+ si quieres ejecutar sin Docker
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) 3.38+
+- [Firebase CLI](https://firebase.google.com/docs/cli) (opcional, solo para desplegar reglas/índices)
 
 ## Arrancar el Proyecto (Desarrollo)
 
-Un solo comando levanta todo el entorno:
+```bash
+flutter pub get
+flutter run
+```
+
+Para usar Firebase Emulators en local:
 
 ```bash
-docker compose up --build
+cd firebase && firebase emulators:start
 ```
 
 | Servicio | URL |
 |---|---|
-| App Flutter (web) | http://localhost:3000 |
 | Firebase Emulator UI | http://localhost:4000 |
 | Firestore | localhost:8080 |
 | Auth | localhost:9099 |
@@ -34,16 +37,21 @@ docker compose up --build
 ```
 lib/
 ├── core/
+│   ├── config/          # Configuración de emuladores
 │   ├── constants/       # Constantes de app y Firebase
 │   ├── errors/          # Excepciones personalizadas
+│   ├── layout/          # Shell y contenedores responsive
 │   ├── router/          # GoRouter config
-│   └── theme/           # Material Design 3 theme
+│   ├── services/        # Servicios (compute, geocoding)
+│   ├── theme/           # Material Design 3 theme
+│   └── widgets/         # Widgets compartidos (mapa, location picker)
 ├── features/
-│   ├── auth/            # Autenticación
-│   ├── items/           # CRUD de objetos
-│   ├── reservations/    # Sistema de reservas
+│   ├── auth/            # Autenticación (login, registro, recuperación)
+│   ├── items/           # CRUD de objetos con fotos y ubicación
+│   ├── reservations/    # Sistema de reservas con bloqueo de fechas
 │   ├── chat/            # Chat en tiempo real
-│   └── profile/         # Perfil y valoraciones
+│   ├── profile/         # Perfil propio y público
+│   └── ratings/         # Valoraciones entre usuarios
 └── main.dart
 
 firebase/
@@ -52,10 +60,6 @@ firebase/
 ├── firestore.indexes.json
 ├── storage.rules        # Reglas de Storage
 └── seed.js              # Datos de prueba
-
-docker/
-├── firebase/Dockerfile  # Imagen emuladores Firebase
-└── flutter/Dockerfile   # Imagen Flutter web dev
 ```
 
 ## Arquitectura
@@ -63,5 +67,5 @@ docker/
 - **Clean Architecture** con separación por features
 - **Riverpod** como gestor de estado
 - **GoRouter** para navegación declarativa
-- **Freezed** para modelos inmutables con serialización JSON
+- **flutter_map** para mapas interactivos con OpenFreeMap
 - **Material Design 3** con tema dinámico (claro/oscuro)
